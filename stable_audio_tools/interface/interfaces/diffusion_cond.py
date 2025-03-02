@@ -24,7 +24,8 @@ from ...inference.utils import prepare_audio
 
 model = None
 model_type = None
-sample_size = 2097152
+#sample_size = 2097152
+sample_size = 7938000
 sample_rate = 44100
 model_half = True
 

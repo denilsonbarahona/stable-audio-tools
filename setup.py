@@ -8,6 +8,8 @@ setup(
     description='Training and inference tools for generative audio models from Stability AI',
     packages=find_packages(),
     install_requires=[
+        'protobuf==3.19.6',
+        'googleapis-common-protos==1.57.0',
         'alias-free-torch==0.0.6',
         'auraloss==0.4.0',
         'descript-audio-codec==1.0.0',
@@ -36,6 +38,10 @@ setup(
         'vector-quantize-pytorch==1.14.41',
         'wandb==0.15.4',
         'webdataset==0.2.100',
-        'x-transformers<1.27.0'
+        'x-transformers<1.27.0',
+        'runpod==1.7.7',
+        'google-auth==2.38.0',
+        'dotenv==0.9.9',
+        'google-cloud-storage==3.0.0'
     ],
 )
