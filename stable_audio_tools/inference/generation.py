@@ -98,7 +98,7 @@ def generate_diffusion_cond(
         negative_conditioning_tensors: tp.Optional[dict] = None,
         batch_size: int = 1,
         #sample_size: int = 2097152,
-        sample_size: int = 7938000,
+        sample_size: int = 52920000,
         sample_rate: int = 48000,
         seed: int = -1,
         device: str = "cuda",
@@ -137,7 +137,6 @@ def generate_diffusion_cond(
     # Seed
     # The user can explicitly set the seed to deterministically generate the same output. Otherwise, use a random seed.
     seed = seed if seed != -1 else np.random.randint(0, 2**32 - 1)
-    print(seed)
     torch.manual_seed(seed)
     # Define the initial noise immediately after setting the seed
     noise = torch.randn([batch_size, model.io_channels, sample_size], device=device)
