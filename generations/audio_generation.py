@@ -34,13 +34,11 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
             sample_size = conditioning.seconds_total * model_config["sample_rate"],
             seed=-1,
             device="cuda" if torch.cuda.is_available() else "cpu",
-            sampler_kwargs={
-                "sigma_max": 0.999,  # Nivel máximo de ruido
-                "sigma_min": 0.001   # Nivel mínimo de ruido
-            },
             negative_conditioning={
                 "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects"
             },
+            sigma_max= 0.999,
+            sigma_min=0.001
         )
         logger.info(f"end tensor")
         return audio_tensor
