@@ -1,6 +1,6 @@
 import torch
-import librosa
 import torchaudio
+import librosa
 from einops import rearrange
 from huggingface_hub import login
 from utils.config import config
@@ -35,11 +35,14 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
             sample_size = conditioning.seconds_total * model_config["sample_rate"],
             seed=-1,
             device="cuda" if torch.cuda.is_available() else "cpu",
-            negative_conditioning={
-                "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects"
-            }
-            #sigma_max= 0.999,
-            #sigma_min=0.001
+            negative_conditioning=[{
+                "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects",
+                "seconds_start": conditioning.seconds_start,
+                "seconds_total": conditioning.seconds_total
+            }],
+            init_noise_level=0.999,
+            sigma_max= 0.999,
+            sigma_min=0.001
         )
         logger.info(f"end tensor")
         return audio_tensor
@@ -60,20 +63,30 @@ def process_audio_to_wav(audio_tensor: torch.Tensor, temp_file: str = "temp_audi
 def process_audio_to_wav_librosa(audio_tensor: torch.Tensor, temp_file: str = "temp_audio.wav") -> str:
     try:
         output = rearrange(audio_tensor, "b d n -> d (b n)")
-
         output_np = output.cpu().numpy()
-
         output_normalized = librosa.util.normalize(output_np)
 
-        output_normalized = librosa.pitch_shift(
-             output_normalized,
-             sr=model_config["sample_rate"],
-             n_steps=1.0  # Ajusta según sea necesario (puede ser positivo o negativo)
-         )
+        if output_normalized.shape[0] == 1:
+            output_normalized = output_normalized[0]
+        elif output_normalized.shape[0] == 2:
+            output_normalized = output_normalized.T
+        else:
+            raise ValueError(f"Expected 1 or 2 channels, got {output_normalized.shape[0]}")
 
-        output_normalized = torch.tensor(output_normalized, dtype=torch.float32)
-        output_normalized = output_normalized.clamp(-1, 1).mul(32767).to(torch.int16)
-        torchaudio.save(temp_file, output_normalized, model_config["sample_rate"])
+        output_shifted = librosa.effects.pitch_shift(
+            y=output_normalized,
+            sr=model_config["sample_rate"],
+            n_steps=config.get_nsteps()
+        )
+        if output_shifted.ndim == 1:
+            output_shifted = output_shifted[None, :]
+        else:
+            output_shifted = output_shifted.T
+
+        output_shifted = torch.tensor(output_shifted, dtype=torch.float32)
+        output_shifted = output_shifted.clamp(-1, 1).mul(32767).to(torch.int16)
+
+        torchaudio.save(temp_file, output_shifted, model_config["sample_rate"])
         logger.info(f"Audio guardado en {temp_file}")
         return temp_file
     except Exception as e:

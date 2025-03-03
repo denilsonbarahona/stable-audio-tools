@@ -1,1 +1,1 @@
-from .audio_generation import generate_audio, process_audio_to_wav
+from .audio_generation import generate_audio, process_audio_to_wav, process_audio_to_wav_librosa

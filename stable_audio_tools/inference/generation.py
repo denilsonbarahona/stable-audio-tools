@@ -97,7 +97,6 @@ def generate_diffusion_cond(
         negative_conditioning: dict = None,
         negative_conditioning_tensors: tp.Optional[dict] = None,
         batch_size: int = 1,
-        #sample_size: int = 2097152,
         sample_size: int = 52920000,
         sample_rate: int = 48000,
         seed: int = -1,
