@@ -28,7 +28,7 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
     try:
         audio_tensor = generate_diffusion_cond(
             model,
-            steps=300,
+            steps=350,
             cfg_scale=7,
             conditioning=conditioning_dict,
             batch_size=1,
@@ -40,9 +40,6 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
                 "seconds_start": conditioning.seconds_start,
                 "seconds_total": conditioning.seconds_total
             }],
-            init_noise_level=0.999,
-            sigma_max= 0.999,
-            sigma_min=0.001
         )
         logger.info(f"end tensor")
         return audio_tensor
