@@ -28,7 +28,7 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
     try:
         audio_tensor = generate_diffusion_cond(
             model,
-            steps=350,
+            steps=500,
             cfg_scale=7,
             conditioning=conditioning_dict,
             batch_size=1,
