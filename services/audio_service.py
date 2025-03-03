@@ -13,7 +13,7 @@ class AudioService:
         try:
             audio_name = f"audios/{user}/{filename}.wav"
             audio_tensor = generate_audio(conditioning)
-            temp_file = process_audio_to_wav(audio_tensor)
+            temp_file = process_audio_to_wav_librosa(audio_tensor)
             audio_url = self.storage_client.upload_file(temp_file, audio_name)
             return {"message": "generated", "url": audio_url}
         except ValueError as e:
