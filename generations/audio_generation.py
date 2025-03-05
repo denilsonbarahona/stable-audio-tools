@@ -26,9 +26,10 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
     }]
 
     try:
+        print(model.io_channels, 'model.io_channels', model.pretransform.io_channels)
         audio_tensor = generate_diffusion_cond(
             model,
-            steps=500,
+            steps=250,
             cfg_scale=7,
             conditioning=conditioning_dict,
             batch_size=1,
