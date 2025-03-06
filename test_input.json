@@ -1,8 +1,8 @@
 {
   "input": {
     "user": "user123",
-    "filename": "testxxs3ss",
-    "prompt": "a sad song",
+    "filename": "sadxs3ss",
+    "prompt": "a sad song with piano",
     "seconds_start": 0,
     "seconds_total": 5
   }

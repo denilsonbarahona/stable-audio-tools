@@ -1,6 +1,13 @@
 from ..data.utils import PadCrop
-
 from torchaudio import transforms as T
+
+RESAMPLE_TRANSFORMS = {}
+
+def get_resample_transform(in_sr, target_sr, device):
+    key = (in_sr, target_sr)
+    if key not in RESAMPLE_TRANSFORMS:
+        RESAMPLE_TRANSFORMS[key] = T.Resample(in_sr, target_sr).to(device)
+    return RESAMPLE_TRANSFORMS[key]
 
 def set_audio_channels(audio, target_channels):
     # Add channel dim if it's missing
@@ -23,7 +30,7 @@ def prepare_audio(audio, in_sr, target_sr, target_length, target_channels, devic
     audio = audio.to(device)
 
     if in_sr != target_sr:
-        resample_tf = T.Resample(in_sr, target_sr).to(device)
+        resample_tf = get_resample_transform(in_sr, target_sr, device)
         audio = resample_tf(audio)
 
     audio = PadCrop(target_length, randomize=False)(audio)

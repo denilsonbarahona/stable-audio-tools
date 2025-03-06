@@ -21,7 +21,11 @@ def generate_diffusion_uncond(
         return_latents = False,
         **sampler_kwargs
         ) -> torch.Tensor:
-    
+    ## change
+    torch.backends.cuda.matmul.allow_tf32 = True  # Habilitar TF32
+    torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cudnn.benchmark = True 
+
     # The length of the output in audio samples 
     audio_sample_size = sample_size
 

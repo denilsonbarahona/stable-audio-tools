@@ -1,4 +1,5 @@
 from models import Audio
+import torch
 from generations import generate_audio, process_audio_to_wav_librosa, process_audio_to_wav
 from utils.storage import StorageClient
 import logging
@@ -22,3 +23,6 @@ class AudioService:
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
             raise
+        finally:
+            torch.cuda.empty_cache()
+            del audio_tensor

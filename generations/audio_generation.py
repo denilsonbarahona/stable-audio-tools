@@ -14,9 +14,19 @@ logger = logging.getLogger(__name__)
 
 login(config.get_hf_token())
 
+## change
+negative_conditioning = [{
+    "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects",
+    "seconds_start": 0,
+    "seconds_total": 30
+}]
 model, model_config = get_pretrained_model("stabilityai/stable-audio-open-1.0")
-model = model.to("cuda" if torch.cuda.is_available() else "cpu")
-    
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = model.to()
+## change
+negative_conditioning_tensors = model.conditioner(negative_conditioning, device) 
+## change
+model = model.half()    
 
 def generate_audio(conditioning: Audio)-> torch.Tensor:
     conditioning_dict = [{
@@ -24,24 +34,26 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
         "seconds_start": conditioning.seconds_start,
         "seconds_total": conditioning.seconds_total
     }]
-
+    ## change
+    negative_conditioning[0]["seconds_total"] = conditioning.seconds_total
     try:
-        print(model.io_channels, 'model.io_channels', model.pretransform.io_channels)
-        audio_tensor = generate_diffusion_cond(
-            model,
-            steps=250,
-            cfg_scale=7,
-            conditioning=conditioning_dict,
-            batch_size=1,
-            sample_size = conditioning.seconds_total * model_config["sample_rate"],
-            seed=-1,
-            device="cuda" if torch.cuda.is_available() else "cpu",
-            negative_conditioning=[{
-                "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects",
-                "seconds_start": conditioning.seconds_start,
-                "seconds_total": conditioning.seconds_total
-            }],
-        )
+        ## change
+        print('steps ->', config.get_nsteps(), 'sampler-type ->', config.getSamplerTye())
+        with torch.no_grad(), torch.autocast(device_type=device, dtype=torch.float16):
+            audio_tensor = generate_diffusion_cond(
+                model,
+                steps=config.get_nsteps(),
+                cfg_scale=7,
+                conditioning=conditioning_dict,
+                batch_size=1,
+                sample_size = conditioning.seconds_total * model_config["sample_rate"],
+                seed=-1,
+                device="cuda" if torch.cuda.is_available() else "cpu",
+                sampler_type = config.getSamplerTye(),
+                sigma_min=0.1,
+                rho=0.5,
+                negative_conditioning_tensors=negative_conditioning_tensors,
+            )
         logger.info(f"end tensor")
         return audio_tensor
     except Exception as e:
@@ -51,7 +63,18 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
 def process_audio_to_wav(audio_tensor: torch.Tensor, temp_file: str = "temp_audio.wav") -> str:
     try:
         output = rearrange(audio_tensor, "b d n -> d (b n)")
+        ## change
+        ## output = output.half().mul(32767).to(torch.int16)  # FP16 -> Int16 en GPU
+        ## output = output.cpu() 
         output = output.to(torch.float32).div(torch.max(torch.abs(output))).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
+        ## change
+        ## torchaudio.save(
+        ##    temp_file, 
+        ##    output, 
+        ##    model_config["sample_rate"],
+        ##    encoding="PCM_S",
+        ##    bits_per_sample=16
+        ## )
         torchaudio.save(temp_file, output, model_config["sample_rate"])
         return temp_file
     except Exception as e:
