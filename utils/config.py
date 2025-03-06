@@ -12,7 +12,7 @@ class Config:
         self.gcp_project_id = os.getenv("GCP_PROJECT_ID")
         self.gcp_client_email = os.getenv("GCP_CLIENT_EMAIL")
         self.nstep = os.getenv("N_STEPS")
-        self.samplerTye = os.get('SAMPLER_TYPE')
+        self.samplerTye = os.getenv('SAMPLER_TYPE')
         self.gcp_private_key = self.get_gcp_private_key()  # clave formateada correctamente
 
         if not self.hf_token:
