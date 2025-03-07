@@ -22,7 +22,7 @@ negative_conditioning = [{
 }]
 model, model_config = get_pretrained_model("stabilityai/stable-audio-open-1.0")
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = model.to()
+model = model.to(device)
 ## change
 negative_conditioning_tensors = model.conditioner(negative_conditioning, device) 
 ## change
@@ -39,7 +39,7 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
     try:
         ## change
         print('steps ->', config.get_nsteps(), 'sampler-type ->', config.getSamplerTye())
-        with torch.no_grad(), torch.autocast(device_type=device, dtype=torch.float16):
+        with torch.no_grad(), torch.amp.autocast(device, dtype=torch.float16):
             audio_tensor = generate_diffusion_cond(
                 model,
                 steps=config.get_nsteps(),
