@@ -15,16 +15,16 @@ logger = logging.getLogger(__name__)
 login(config.get_hf_token())
 
 ## change
-negative_conditioning = [{
+""" negative_conditioning = [{
     "prompt": "Low quality audio with poorly tuned instruments, atonal melodies, distorted sounds, excessive noise, crackling artifacts, unbalanced frequencies, muddy or muffled tones, lack of clarity, harsh dissonance, unnatural reverb, inconsistent rhythms, unwanted static, low fidelity, robotic or synthetic artifacts, overly compressed dynamics, and lack of stereo depth, unsuitable for professional jingles, tones, or sound effects",
     "seconds_start": 0,
     "seconds_total": 30
-}]
+}] """
 model, model_config = get_pretrained_model("stabilityai/stable-audio-open-1.0")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = model.to(device)
 ## change
-negative_conditioning_tensors = model.conditioner(negative_conditioning, device) 
+""" negative_conditioning_tensors = model.conditioner(negative_conditioning, device)  """
 ## change
 model = model.half()    
 
@@ -35,7 +35,7 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
         "seconds_total": conditioning.seconds_total
     }]
     ## change
-    negative_conditioning[0]["seconds_total"] = conditioning.seconds_total
+    ## negative_conditioning[0]["seconds_total"] = conditioning.seconds_total
     try:
         ## change
         print('steps ->', config.get_nsteps(), 'sampler-type ->', config.getSamplerTye())
@@ -43,7 +43,7 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
             audio_tensor = generate_diffusion_cond(
                 model,
                 steps=config.get_nsteps(),
-                cfg_scale=7,
+                cfg_scale=8,
                 conditioning=conditioning_dict,
                 batch_size=1,
                 sample_size = conditioning.seconds_total * model_config["sample_rate"],
@@ -51,8 +51,8 @@ def generate_audio(conditioning: Audio)-> torch.Tensor:
                 device="cuda" if torch.cuda.is_available() else "cpu",
                 sampler_type = config.getSamplerTye(),
                 sigma_min=0.1,
-                rho=0.5,
-                negative_conditioning_tensors=negative_conditioning_tensors,
+                rho=0.5
+                ## negative_conditioning_tensors=negative_conditioning_tensors,
             )
         logger.info(f"end tensor")
         return audio_tensor
